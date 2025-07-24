@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ✅ Optional: Custom styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb;
+}
+
+/* ✅ Print tweaks */
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+  .print-text-sm {
+    font-size: 12px !important;
+  }
+}
