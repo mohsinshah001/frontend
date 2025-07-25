@@ -48,8 +48,10 @@ const PrintInvoice = React.memo(function PrintInvoice({
 
       {/* Customer Info */}
       <div className="mb-6 p-4 border rounded-md bg-gray-50 text-sm shadow-sm relative z-10">
-        <p><strong>👤 Customer Name:</strong> {customerName}</p>
-        <p><strong>📞 Contact Number:</strong> {contact}</p>
+        {/* Agar customerName empty ho to '-' show karein */}
+        <p><strong>👤 Customer Name:</strong> {customerName || '-'}</p>
+        {/* Agar contact empty ho to '-' show karein */}
+        <p><strong>📞 Contact Number:</strong> {contact || '-'}</p>
       </div>
 
       {/* Items Table */}
