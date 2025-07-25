@@ -76,12 +76,13 @@ export default function Dashboard() {
         <span className="text-blue-600 text-3xl">📊</span>
         Dashboard Overview
       </h3>
-      {loadingSummary ? (
-        <p className="text-gray-500 animate-pulse">Loading dashboard summary...</p>
-      ) : errorSummary ? (
+      {/* Error message sirf tab dikhayein jab error ho aur summary data na ho */}
+      {errorSummary && !dashboardSummary ? (
         <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-md shadow-sm mb-8">
           <strong>Error:</strong> {errorSummary}
         </div>
+      ) : loadingSummary ? (
+        <p className="text-gray-500 animate-pulse">Loading dashboard summary...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {/* Total Clients Card */}
