@@ -15,7 +15,7 @@ export default function SavedInvoices() {
     const fetchInvoices = async () => {
       try {
         setLoading(true); // Set loading true before fetch starts
-        const res = await fetch('https://al-syed-graphics.onrender.com');
+        const res = await fetch('http://localhost:5000/invoices');
 
         if (!res.ok) {
           const errorBody = await res.text();
@@ -141,7 +141,7 @@ export default function SavedInvoices() {
             {error}
           </p>
           <p className="text-gray-700 text-sm">
-            Please ensure your backend server is running on `http://localhost:5000` and the `/invoices` endpoint is correctly configured.
+            Please ensure your backend server is running on `https://al-syed-graphics.onrender.com` and the `/invoices` endpoint is correctly configured.
           </p>
         </div>
       </div>
