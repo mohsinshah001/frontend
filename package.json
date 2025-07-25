@@ -1,20 +1,19 @@
 {
-  "name": "your-app-name", // Aapke project ka naam
+  "name": "alsyed-graphics",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build", // Is line ko confirm karein ke bilkul aisi hi hai
+    "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.7.2", // Agar aap axios use kar rahe hain
+    "axios": "^1.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.23.1" // Agar react-router-dom use kar rahe hain
-    // Aur yahan aapki doosri dependencies hongi
+    "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
