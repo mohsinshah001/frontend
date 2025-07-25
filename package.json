@@ -1,7 +1,7 @@
 {
   "name": "alsyed-graphics",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2", // Yahan change karein
   "type": "module",
   "scripts": {
     "dev": "vite",
