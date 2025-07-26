@@ -15,7 +15,7 @@ export default function SavedInvoices() {
     const fetchInvoices = async () => {
       try {
         setLoading(true); // Set loading true before fetch starts
-        const res = await fetch('http://localhost:5000/invoices');
+        const res = await fetch('https://al-syed-graphics.onrender.com');
 
         if (!res.ok) {
           const errorBody = await res.text();
