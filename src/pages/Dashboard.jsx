@@ -5,63 +5,59 @@ const BASE_API_URL = "https://al-syed-graphics.onrender.com";
 
 export default function Dashboard() {
   const [recentInvoices, setRecentInvoices] = useState([]);
-  const [dashboardSummary, setDashboardSummary] = useState(null); // Dashboard summary ke liye state
-  const [loadingRecent, setLoadingRecent] = useState(true);
-  const [loadingSummary, setLoadingSummary] = useState(true); // Summary loading ke liye state
-  const [errorRecent, setErrorRecent] = useState(null);
-  const [errorSummary, setErrorSummary] = useState(null); // Summary error ke liye state
+  const [totalClients, setTotalClients] = useState(0);
+  const [totalInvoices, setTotalInvoices] = useState(0);
+  const [totalPaidAmount, setTotalPaidAmount] = useState(0);
+  const [totalUnpaidAmount, setTotalUnpaidAmount] = useState(0);
+  const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const [errorMetrics, setErrorMetrics] = useState(null);
 
-  // Function to fetch recent invoices
-  const fetchRecentInvoices = async () => {
-    try {
-      setLoadingRecent(true);
-      // Backend ke live URL se data fetch karein
-      const res = await fetch(`${BASE_API_URL}/invoices`);
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`HTTP error! Status: ${res.status} - ${errorText.substring(0, 150)}...`);
-      }
-
-      const data = await res.json();
-      // Date ke hisaab se sort karein aur sirf latest 5 invoices dikhayein
-      const sortedInvoices = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setRecentInvoices(sortedInvoices.slice(0, 5));
-    } catch (err) {
-      console.error('Error fetching recent invoices:', err);
-      setErrorRecent(err.message || 'Failed to load recent invoices.');
-    } finally {
-      setLoadingRecent(false);
-    }
-  };
-
-  // Function to fetch dashboard summary
-  const fetchDashboardSummary = async () => {
-    try {
-      setLoadingSummary(true);
-      // Backend ke live URL se dashboard summary data fetch karein
-      const res = await fetch(`${BASE_API_URL}/dashboard_summary`);
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`HTTP error! Status: ${res.status} - ${errorText.substring(0, 150)}...`);
-      }
-
-      const data = await res.json();
-      setDashboardSummary(data);
-    } catch (err) {
-      console.error('Error fetching dashboard summary:', err);
-      setErrorSummary(err.message || 'Failed to load dashboard summary.');
-    } finally {
-      setLoadingSummary(false);
-    }
-  };
-
-  // Jab component mount ho, to dono fetches ko call karein
   useEffect(() => {
-    fetchRecentInvoices();
-    fetchDashboardSummary();
-  }, []); // Empty dependency array means this runs once on mount
+    const loadDashboardData = async () => { // Async function banaya gaya hai kyuki hum fetch use kar rahe hain
+      setErrorMetrics(null); 
+      setLoadingMetrics(true);
+
+      try {
+        // Backend se dashboard summary data fetch karein
+        const summaryResponse = await fetch(`${BASE_API_URL}/dashboard_summary`);
+        if (!summaryResponse.ok) {
+          throw new Error(`Failed to fetch dashboard summary: ${summaryResponse.statusText}`);
+        }
+        const summaryData = await summaryResponse.json();
+        
+        setTotalClients(summaryData.total_clients);
+        setTotalInvoices(summaryData.total_invoices);
+        setTotalPaidAmount(summaryData.total_paid_amount);
+        setTotalUnpaidAmount(summaryData.total_unpaid_amount);
+
+        // Backend se sabhi invoices fetch karein
+        const invoicesResponse = await fetch(`${BASE_API_URL}/invoices`);
+        if (!invoicesResponse.ok) {
+          throw new Error(`Failed to fetch invoices: ${invoicesResponse.statusText}`);
+        }
+        const invoicesData = await invoicesResponse.json();
+
+        // Invoices ko date ke hisab se sort karein (latest pehle)
+        const sortedInvoices = invoicesData.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          if (isNaN(dateA) || isNaN(dateB)) {
+            return 0;
+          }
+          return dateB - dateA;
+        });
+        setRecentInvoices(sortedInvoices.slice(0, 5)); // Sirf pehli 5 recent invoices dikhayein
+
+      } catch (err) {
+        console.error('Backend se dashboard data load karne mein error:', err);
+        setErrorMetrics(err.message || 'Backend se data load karne mein nakami. Server down ho sakta hai ya network issue ho sakta hai.');
+      } finally {
+        setLoadingMetrics(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []); // Empty dependency array means this runs once on component mount
 
   const formatCurrency = (amount) =>
     `₨ ${parseFloat(amount || 0).toLocaleString('en-PK', {
@@ -70,111 +66,98 @@ export default function Dashboard() {
     })}`;
 
   return (
-    <div className="mt-10 px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Overview Section */}
-      <h3 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
-        <span className="text-blue-600 text-3xl">📊</span>
-        Dashboard Overview
-      </h3>
-      {/* Error message sirf tab dikhayein jab error ho aur summary data na ho */}
-      {errorSummary && !dashboardSummary ? (
-        <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-md shadow-sm mb-8">
-          <strong>Error:</strong> {errorSummary}
-        </div>
-      ) : loadingSummary ? (
-        <p className="text-gray-500 animate-pulse">Loading dashboard summary...</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {/* Total Clients Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between border-l-4 border-blue-500">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Clients</p>
-              <p className="text-3xl font-bold text-gray-900">{dashboardSummary?.total_clients || 0}</p>
-            </div>
-            <span className="text-blue-500 text-4xl">👥</span>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-indigo-100 p-6 sm:p-10">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+        <h2 className="text-3xl font-extrabold text-green-800 mb-6 text-center">
+          📊 ڈیش بورڈ کا جائزہ
+        </h2>
+
+        {loadingMetrics ? (
+          <div className="flex items-center justify-center py-10">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-green-500 border-t-transparent"></div>
+            <p className="ml-4 text-lg text-gray-600">بیک اینڈ سے ڈیش بورڈ ڈیٹا لوڈ ہو رہا ہے...</p>
           </div>
-
-          {/* Total Invoices Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between border-l-4 border-purple-500">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Invoices</p>
-              <p className="text-3xl font-bold text-gray-900">{dashboardSummary?.total_invoices || 0}</p>
-            </div>
-            <span className="text-purple-500 text-4xl">📄</span>
+        ) : errorMetrics ? (
+          <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-md shadow-sm text-center">
+            <strong>خرابی:</strong> {errorMetrics}
+            <p className="text-xs mt-2 text-gray-600">براہ کرم یقینی بنائیں کہ آپ کا بیک اینڈ سرور چل رہا ہے اور قابل رسائی ہے۔</p>
           </div>
-
-          {/* Total Paid Amount Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between border-l-4 border-green-500">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Paid Amount</p>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(dashboardSummary?.total_paid_amount || 0)}</p>
+        ) : (
+          <>
+            {/* خلاصہ میٹرکس */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-blue-100 p-5 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                <span className="text-4xl mb-2">👥</span>
+                <p className="text-gray-600 text-sm font-medium">کل کلائنٹس</p>
+                <p className="text-blue-800 text-2xl font-bold">{totalClients}</p>
+              </div>
+              <div className="bg-purple-100 p-5 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                <span className="text-4xl mb-2">🧾</span>
+                <p className="text-gray-600 text-sm font-medium">کل انوائسز</p>
+                <p className="text-purple-800 text-2xl font-bold">{totalInvoices}</p>
+              </div>
+              <div className="bg-green-100 p-5 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                <span className="text-4xl mb-2">✅</span>
+                <p className="text-gray-600 text-sm font-medium">کل ادا شدہ</p>
+                <p className="text-green-800 text-2xl font-bold">{formatCurrency(totalPaidAmount)}</p>
+              </div>
+              <div className="bg-orange-100 p-5 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                <span className="text-4xl mb-2">⚠️</span>
+                <p className="text-gray-600 text-sm font-medium">کل بقایا</p>
+                <p className="text-orange-800 text-2xl font-bold">{formatCurrency(totalUnpaidAmount)}</p>
+              </div>
             </div>
-            <span className="text-green-500 text-4xl">✅</span>
-          </div>
 
-          {/* Total Unpaid Amount Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 flex items-center justify-between border-l-4 border-red-500">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Unpaid Amount</p>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(dashboardSummary?.total_unpaid_amount || 0)}</p>
-            </div>
-            <span className="text-red-500 text-4xl">❌</span>
-          </div>
-        </div>
-      )}
+            {/* حالیہ انوائسز سیکشن */}
+            <h3 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
+              <span className="text-green-600 text-3xl">📄</span>
+              حالیہ انوائسز
+            </h3>
 
-      {/* Recent Invoices Section */}
-      <h3 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
-        <span className="text-green-600 text-3xl">🧾</span>
-        Recent Invoices
-      </h3>
-
-      {loadingRecent ? (
-        <p className="text-gray-500 animate-pulse">Loading recent invoices...</p>
-      ) : errorRecent ? (
-        <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-md shadow-sm">
-          <strong>Error:</strong> {errorRecent}
-        </div>
-      ) : recentInvoices.length === 0 ? (
-        <p className="text-gray-400 italic">No recent invoices found.</p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl shadow ring-1 ring-gray-200 bg-white">
-          <table className="min-w-full">
-            <thead className="bg-gradient-to-r from-green-500 to-green-300 text-white">
-              <tr className="text-sm uppercase tracking-wider text-left">
-                <th className="p-4">Invoice No</th>
-                <th className="p-4">Customer</th>
-                <th className="p-4">Date</th>
-                <th className="p-4">Total</th>
-                <th className="p-4">Remaining</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700 text-sm divide-y divide-gray-100">
-              {recentInvoices.map((inv) => (
-                <tr
-                  key={inv.invoice_number}
-                  className="hover:bg-green-50 transition duration-200 ease-in-out"
-                >
-                  <td className="p-4 font-semibold text-blue-700">{inv.invoice_number}</td>
-                  <td className="p-4">{inv.customer_name}</td>
-                  <td className="p-4">{inv.date}</td>
-                  <td className="p-4 text-green-700 font-medium">
-                    {formatCurrency(inv.total_amount)}
-                  </td>
-                  <td
-                    className={`p-4 font-medium ${
-                      // remaining_amount use karein
-                      parseFloat(inv.remaining_amount || 0) > 0 ? 'text-red-600' : 'text-gray-400'
-                    }`}
-                  >
-                    {formatCurrency(inv.remaining_amount)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            {recentInvoices.length === 0 ? (
+              <p className="text-gray-400 italic">کوئی حالیہ انوائس نہیں ملی۔ انہیں یہاں دیکھنے کے لیے کچھ انوائسز بنائیں۔</p>
+            ) : (
+              <div className="overflow-x-auto rounded-xl shadow ring-1 ring-gray-200 bg-white">
+                <table className="min-w-full">
+                  <thead className="bg-gradient-to-r from-green-500 to-green-300 text-white">
+                    <tr className="text-sm uppercase tracking-wider text-left">
+                      <th className="p-4">انوائس نمبر</th>
+                      <th className="p-4">گاہک</th>
+                      <th className="p-4">تاریخ</th>
+                      <th className="p-4">کل</th>
+                      <th className="p-4">بقایا</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-700 text-sm divide-y divide-gray-100">
+                    {recentInvoices.map((inv) => (
+                      <tr
+                        key={inv.invoice_number}
+                        className="hover:bg-green-50 transition duration-200 ease-in-out"
+                      >
+                        <td className="p-4 font-semibold text-blue-700">{inv.invoice_number}</td>
+                        <td className="p-4">{inv.customer_name}</td>
+                        <td className="p-4">{inv.date}</td>
+                        <td className="p-4 text-green-700 font-medium">
+                          {formatCurrency(inv.total_amount)}
+                        </td>
+                        <td
+                          className={`p-4 font-medium ${
+                            // remaining_balance کو نمبر کے طور پر پارس کریں تاکہ صحیح موازنہ ہو سکے
+                            parseFloat(inv.remaining_balance || 0) > 0 ? 'text-red-600' : 'text-gray-400'
+                          }`}
+                        >
+                          {/* فارمیٹ شدہ remaining_balance دکھائیں */}
+                          {formatCurrency(inv.remaining_balance)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
