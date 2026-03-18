@@ -28,6 +28,28 @@ const PrintInvoice = React.memo(function PrintInvoice({
         overflow: 'hidden'
       }}
     >
+      {/* Print Styles: Yeh sirf is page ko print karega aur Sidebar/baqi elements ko hide kar dega */}
+      <style>
+        {`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .invoice-page, .invoice-page * {
+              visibility: visible;
+            }
+            .invoice-page {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              border: none;
+              box-shadow: none;
+            }
+          }
+        `}
+      </style>
+
       {/* Watermark Logo */}
       <img
         src="/logo.png"
