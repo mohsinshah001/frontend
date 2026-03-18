@@ -70,15 +70,6 @@ export default function SavedInvoices() {
     // navigate(`/edit-invoice/${invoice.invoice_number}`);
   };
 
-  // --- Print Functionality Added Here ---
-  const handlePrint = (invoice) => {
-    alert(`🖨️ Print functionality for Invoice #${invoice.invoice_number} would go here.`);
-    console.log('Printing Invoice:', invoice);
-    // Asal print logic yahan aayegi. Agar aapke paas print ka alag page hai toh wahan navigate kar sakte hain:
-    // navigate(`/print-invoice/${invoice.invoice_number}`);
-    // Ya phir simply window.print() use kar sakte hain agar layout waisa bana hua ho.
-  };
-
   // --- Add Payment Functionality ---
   const handleAddPaymentClick = (invoice) => {
     setInvoiceToPay(invoice);
@@ -273,15 +264,6 @@ export default function SavedInvoices() {
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex flex-col sm:flex-row items-center justify-end gap-1">
-                        
-                        {/* Print Button Added Here */}
-                        <button
-                          onClick={() => handlePrint(inv)}
-                          className="w-full sm:w-auto bg-blue-500 text-white hover:bg-blue-600 font-semibold py-1 px-2 rounded-md transition duration-150 ease-in-out border border-blue-500 text-xs sm:text-sm"
-                        >
-                          Print
-                        </button>
-
                         <button
                           onClick={() => handleEdit(inv)}
                           className="w-full sm:w-auto text-indigo-600 hover:text-indigo-900 font-semibold py-1 px-2 rounded-md transition duration-150 ease-in-out border border-indigo-600 hover:bg-indigo-50 text-xs sm:text-sm"
