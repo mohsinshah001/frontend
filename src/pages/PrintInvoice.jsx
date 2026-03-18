@@ -34,7 +34,11 @@ const PrintInvoice = React.memo(function PrintInvoice({
           @media print {
             @page {
               size: A4 portrait;
-              margin: 10mm;
+              margin: 10mm; /* A4 standard print margin */
+            }
+            body {
+              -webkit-print-color-adjust: exact; /* Background colors/watermarks ke liye */
+              print-color-adjust: exact;
             }
             body * {
               visibility: hidden;
@@ -46,10 +50,11 @@ const PrintInvoice = React.memo(function PrintInvoice({
               position: absolute;
               left: 0;
               top: 0;
-              width: 100%;
-              max-width: 210mm; /* A4 exact width */
+              width: 100%; /* @page margin ke mutabiq khud adjust ho jayega */
+              min-height: 100%; /* Pura A4 page cover karega */
               border: none !important;
               box-shadow: none !important;
+              margin: 0 !important;
             }
           }
         `}
@@ -149,12 +154,4 @@ const PrintInvoice = React.memo(function PrintInvoice({
         <div className="w-1/3 text-center border-t border-gray-400 pt-2">
           Customer Signature
         </div>
-        <div className="w-1/3 text-center border-t border-gray-400 pt-2">
-          Authorized Signature
-        </div>
-      </div>
-    </div>
-  );
-});
-
-export default PrintInvoice;
+        <div className="
