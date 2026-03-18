@@ -28,10 +28,14 @@ const PrintInvoice = React.memo(function PrintInvoice({
         overflow: 'hidden'
       }}
     >
-      {/* Print Styles: Yeh sirf is page ko print karega aur Sidebar/baqi elements ko hide kar dega */}
+      {/* Print Styles: A4 size par fit karne ke liye update kiya gaya hai */}
       <style>
         {`
           @media print {
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
+            }
             body * {
               visibility: hidden;
             }
@@ -43,8 +47,9 @@ const PrintInvoice = React.memo(function PrintInvoice({
               left: 0;
               top: 0;
               width: 100%;
-              border: none;
-              box-shadow: none;
+              max-width: 210mm; /* A4 exact width */
+              border: none !important;
+              box-shadow: none !important;
             }
           }
         `}
